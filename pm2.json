@@ -1,0 +1,16 @@
+{
+  "apps": [{
+    "name": "E:summerWorkE:summerWorklearn_thinkjs",
+    "script": "www/production.js",
+    "cwd": "E:\summerWork\learn_thinkjs",
+    "exec_mode": "cluster",
+    "instances": 0,
+    "max_memory_restart": "1G",
+    "autorestart": true,
+    "node_args": [],
+    "args": [],
+    "env": {
+      
+    }
+  }]
+}
