@@ -8,6 +8,7 @@ export default class extends Base {
      * @return {Promise} []
      */
     async addAction(){
+        this.setCorsHeader();
         ////auto render template file index_index.html
         if (!this.isPost()) return  this.fail(400, "must be post request");
         ////let account_model = this.model("account");
@@ -19,6 +20,7 @@ export default class extends Base {
     }
     async findAction() {
         ////auto render template file index_index.html
+        this.setCorsHeader();
         if (!this.isPost()) return  this.fail(400, "must be post request");
         ////let account_model = this.model("account");
         let position_model = this.model("position");
@@ -33,5 +35,12 @@ export default class extends Base {
             return obj;
         });
         return this.json({"data": newRecords});
+    }
+
+    setCorsHeader(){
+        this.header("Access-Control-Allow-Origin", this.header("origin") || "*");
+        this.header("Access-Control-Allow-Headers", "x-requested-with");
+        this.header("Access-Control-Request-Method", "GET,POST,PUT,DELETE");
+        this.header("Access-Control-Allow-Credentials", "true");
     }
 }

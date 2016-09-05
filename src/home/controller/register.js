@@ -9,6 +9,7 @@ export default class extends Base {
      */
     async indexAction(){
         //auto render template file index_index.html
+        this.setCorsHeader();
         if (!this.isPost()) return  this.fail(400, "must be post request");
         let account_model = this.model("account");
         let account_name = this.post("account");
@@ -21,4 +22,12 @@ export default class extends Base {
             return this.fail(300, "the use is esist");
         }
     }
+
+    setCorsHeader(){
+        this.header("Access-Control-Allow-Origin", this.header("origin") || "*");
+        this.header("Access-Control-Allow-Headers", "x-requested-with");
+        this.header("Access-Control-Request-Method", "GET,POST,PUT,DELETE");
+        this.header("Access-Control-Allow-Credentials", "true");
+    }
+
 }

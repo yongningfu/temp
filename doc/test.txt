@@ -4,7 +4,9 @@ curl -d "account=535802703@qq.com&password=111" http://localhost:8360/register
 curl -d "account=535802702@qq.com&password=111" http://localhost:8360/register
 curl -d "account=535802703@qq.com&password=222" http://localhost:83600/register
 
-curl -d "account=535802703@qq.com&password=111" http://119.29.222.187:8000/register
+
+curl -d "account=535802703@qq.com&password=222" http://119.29.183.198:8360/register
+
 
 2 µÇÂ¼
 curl -d "account=535802703@qq.com&password=111" http://localhost:8360/login
