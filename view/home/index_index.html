@@ -1,48 +1,139 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>New ThinkJS Application</title>
-<style>
-*{padding: 0;margin: 0;font-size: 16px;line-height: 20px;font-family: arial;}
-a, a:visited{color:#337ab7;text-decoration: none;}
-header{padding: 70px 0 70px 0;background-color: #4A6495}
-h1{font-size: 36px;color:#fff;font-weight: normal;}
-code{  padding: 2px 4px;font-size: 90%;color: #c7254e;background-color: #f9f2f4;border-radius: 4px;}
-.content{width: 1000px;margin: auto}
-.wrap{width: 1000px;margin: auto}
-.content{margin-top: 80px;}
-.list{width: 800px;}
-.list .item{position: relative;padding-left: 70px;margin-top: 50px;}
-.list .item .step{position: absolute;width: 36px;height: 36px;top:-3px;left:0;border: 5px solid #4A6495;border-radius: 23px;text-align: center;line-height: 36px;}
-.list .item h2{font-size: 24px;font-weight: normal;}
-.list .item p{line-height: 30px;margin-top: 10px}
-</style>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+        body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=iXliOdR0oLU8Odv0KfZd7tYSjiMVNz1E"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/library/CurveLine/1.5/src/CurveLine.min.js"></script>
+    <title>批量转换</title>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <h1>A New App Created By ThinkJS</h1>
-    </div>
-  </header>
-  <div class="content">
-    <div class="list">
-      <div class="item">
-        <div class="step">1</div>
-        <h2>Generate Files</h2>
-        <p>Run <code>thinkjs</code> command to create module, controler, model, service and so on. visit <a href="https://thinkjs.org/doc/thinkjs_command.html">https://thinkjs.org/doc/thinkjs_command.html</a> to view more infomation.</p>
-      </div>
-      <div class="item">
-        <div class="step">2</div>
-        <h2>Documatation</h2>
-        <p>ThinkJS has html and pdf documents. visit <a href="https://thinkjs.org/doc.html">https://thinkjs.org/doc.html</a></p>
-      </div>
-      <div class="item">
-        <div class="step">3</div>
-        <h2>WebSocket</h2>
-        <p>ThinkJS support <code>socket.io</code> and <code>sockjs</code> WebSocket client and server node. visit <a href="https://thinkjs.org/doc/adapter_websocket.html">https://thinkjs.org/doc/adapter_websocket.html</a></p>
-      </div>
-    </div>
-  </div>
+    <div id="allmap"></div>
+    <div id="click">click here</div>
 </body>
 </html>
+<script type="text/javascript">
+
+   var serverData =  {"data":[{"longitude":113.3884,"latitude":23.07084},{"longitude":113.388007,"latitude":23.071061},{"longitude":113.385994,"latitude":23.070578},{"longitude":113.385994,"latitude":23.070578},{"longitude":113.385954,"latitude":23.070497},{"longitude":113.385801,"latitude":23.069113},{"longitude":113.386714,"latitude":23.068403},{"longitude":113.386714,"latitude":23.068403},{"longitude":113.386714,"latitude":23.068403},{"longitude":113.385978,"latitude":23.066582},{"longitude":113.385978,"latitude":23.066582},{"longitude":113.385978,"latitude":23.066582},{"longitude":113.38586,"latitude":23.065136},{"longitude":113.38586,"latitude":23.065136},{"longitude":113.38506,"latitude":23.062839},{"longitude":113.385866,"latitude":23.062231},{"longitude":113.386879,"latitude":23.060999},{"longitude":113.386879,"latitude":23.060999},{"longitude":113.379189,"latitude":23.067319}]};
+   var bm = new BMap.Map("allmap");
+
+   if (serverData.data.length !== 0) {
+       //选中间点为显示
+       var centerPosition = serverData.data[(serverData.data.length - 1) / 2];
+       bm.centerAndZoom(new BMap.Point(centerPosition.longitude, centerPosition.latitude), 100);
+
+       var points = serverData.data.map(function(element) {
+           return new BMap.Point(element.longitude, element.latitude);
+       });
+       var convertor = new BMap.Convertor();
+       //封装promise操作函数
+       function translatePromiseLib(bmapPoints) {
+           var promise = new Promise(function(resolve, reject) {
+               convertor.translate(bmapPoints, 1, 5, function(data) {
+                   if (data.status === 0) {
+                       resolve(data);
+                   } else {
+                       reject(data.status);
+                   }
+               });
+           });
+           return promise;
+       }
+
+       /**
+        * 把一个数组进行分组 每一组为n
+        * */
+       function splitArrayToGroup(array, n) {
+           if (n == undefined || n <= 0) return [];
+           var start = 0;
+           var end  = n;
+           var group = [];
+           while (true) {
+
+               //标记结束
+               if (end >= array.length) {
+                   end = array.length;
+                   //防止空数组
+                   if (end > start) {
+                       group.push(array.slice(start, end));
+                   }
+                   break;
+               } else {
+                   group.push(array.slice(start, end));
+                   start = end;
+                   end = end + n;
+               }
+           }
+           return group;
+       }
+
+       //每10个一组  生成promise数组
+       var groupArray = splitArrayToGroup(points, 10);
+       var promiseArray = [];
+       groupArray.forEach(function(element) {
+           promiseArray.push(translatePromiseLib(element));
+       });
+
+       //promise管理流程
+       Promise.all(promiseArray).then(function(data) {
+
+           //描绘点
+           /*
+           for (var i = 0; i < data.length; i++) {
+               for (var j = 0; j < data[i].points.length; j++) {
+                   bm.addOverlay(new BMap.Marker(data[i].points[j]));
+                   bm.setCenter(data[i].points[j]);
+                   console.log(data[i].points[j]);
+               }
+           }*/
+
+           //描绘线
+           var allTransPointArray = [];
+           data.forEach(function(element) {
+               allTransPointArray = allTransPointArray.concat(element.points);
+           });
+
+           var curve = new BMapLib.CurveLine(allTransPointArray, {strokeColor:"blue", strokeWeight:3, strokeOpacity:0.5});
+           bm.addOverlay(curve); //添加到地图中
+           //curve.enableEditing(); //开启编辑功能
+
+       }, function (err) {
+           console.log("get data err, number", err);
+       });
+
+   } else {
+       alert("没有定位数据");
+   }
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

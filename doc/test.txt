@@ -17,4 +17,5 @@ curl -d "launcher_id=1&longitude=11.23&latitude=55.323" http://localhost:8360/po
 
 4 ≤È—Ø
 curl -d "id=1" http://localhost:8360/position/find
+curl -d "id=1" http://119.29.183.198:8360/position/find
 
